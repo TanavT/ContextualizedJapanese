@@ -4,18 +4,18 @@ import {verify_translation} from "./helpers.js";
 
 function TranslationInterface() {
     const [text, setText] = useState('')
-    const [translationResponse, setTranslationResponse] = useState('')
     const [currentTranslation, setCurrentTranslation] = useState(false)
     const [translationDictionary, setTranslationDictionary] = useState(null)
+    const [googleTranslation, setGoogleTranslation] = useState(null)
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
 
-    function createDictionary(translation) {
+    function createDictionary(dictionary) {
         return (
             <div className="translation-wrapper-dictionary">
                 <dl>
-                    {translation.map((word) =>
+                    {dictionary.map((word) =>
                         <>
                             <dt>{word.reduce((str, morpheme) => str + morpheme.morpheme, "")}</dt>
                             <dd>
@@ -42,9 +42,20 @@ function TranslationInterface() {
         )
     }
 
+    function createTranslation(translation) {
+        return (
+            <div className="translation-wrapper-google-translation">
+                <h3>
+                    {translation.data.translations[0]["translatedText"]}
+                </h3>
+            </div>
+        )
+    }
+
 
     function convertTranslationToHTML(translation){
-        setTranslationDictionary(createDictionary(translation))
+        setTranslationDictionary(createDictionary(translation.dictionary))
+        setGoogleTranslation(createTranslation(translation.translation))
         setCurrentTranslation(true)
     }
 
@@ -78,7 +89,6 @@ function TranslationInterface() {
             setError(`Error translating: ${error}`)
         } finally {
             const response = await res.json()
-            setTranslationResponse(response)
             console.log(response)
             convertTranslationToHTML(response)
             // alert(translationResponse)
@@ -111,7 +121,7 @@ function TranslationInterface() {
             )}
 
             <section className="current-translation">
-                current translation
+                {googleTranslation}
             </section>
 
             <section className="past-translations">
