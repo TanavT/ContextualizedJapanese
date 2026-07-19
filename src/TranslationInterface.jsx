@@ -1,17 +1,34 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import {verify_translation} from "./helpers.js";
+
+
 
 
 function TranslationInterface() {
     const [text, setText] = useState('')
+    const [context, setContext] = useState('')
+    const [isOutputPractice, setIsOutputPractice] = useState(false)
     const [currentTranslation, setCurrentTranslation] = useState(false)
     const [translationDictionary, setTranslationDictionary] = useState(null)
     const [googleTranslation, setGoogleTranslation] = useState(null)
+    const [explanation, setExplanation] = useState(null)
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    function Explanation({explanation}) {
+        if (!explanation) return null
+
+        return (
+            <>
+                <h3>Explanation</h3>
+                <ReactMarkdown>{explanation[0]["text"]}</ReactMarkdown>
+            </>
+        )
+    }
 
     function createDictionary(dictionary) {
+        if (!dictionary) return null
         return (
             <div className="translation-wrapper-dictionary">
                 <dl>
@@ -43,6 +60,7 @@ function TranslationInterface() {
     }
 
     function createTranslation(translation) {
+        if (!translation) return null
         return (
             <div className="translation-wrapper-google-translation">
                 <h3>
@@ -56,6 +74,7 @@ function TranslationInterface() {
     function convertTranslationToHTML(translation){
         setTranslationDictionary(createDictionary(translation.dictionary))
         setGoogleTranslation(createTranslation(translation.translation))
+        setExplanation(translation.explanation)
         setCurrentTranslation(true)
     }
 
@@ -82,14 +101,18 @@ function TranslationInterface() {
                     headers: {
                         'Content-Type': 'application/json' // sending JSON
                     },
-                    body: JSON.stringify({"text": text})// Converts JS object to a string payload
+                    body: JSON.stringify({
+                        "text": text,
+                        "context": context,
+                        "isOutputPractice": isOutputPractice
+                    })// Converts JS object to a string payload
                 })
         } catch (error) {
             console.error(`Error translating: ${error}`)
             setError(`Error translating: ${error}`)
         } finally {
             const response = await res.json()
-            console.log(response)
+            // console.log(response)
             convertTranslationToHTML(response)
             // alert(translationResponse)
         }
@@ -111,25 +134,56 @@ function TranslationInterface() {
                         className="text_input"
                     />
                 </label>
+                <label>
+                    Sentence Context:
+                    <input
+                        type="text"
+                        value={context}
+                        onChange={(e) => setContext(e.target.value)}
+                        placeholder="Where or how is this sentence being used?"
+                        className="context_input"
+                    />
+                </label>
+                <label>
+                    Mode:
+                    <select
+                        value={isOutputPractice ? "output" : "translation"}
+                        onChange={(e) => setIsOutputPractice(e.target.value === "output")}
+                        className="practice_select"
+                    >
+                        <option value="translation">Translation</option>
+                        <option value="output">Output Practice</option>
+                    </select>
+                </label>
                 <button type="submit" className="button">Translate</button>
             </form>
 
-            {currentTranslation && (
-                <aside className="translation-wrapper">
-                    {translationDictionary}
-                </aside>
-            )}
+
+            <aside className="translation-wrapper">
+                {loading && <p>Loading...</p>}
+                {error && <div><p style={{color: 'red'}}>{`${error}. Current translation process halted.`}</p></div>}
+                {currentTranslation && translationDictionary}
+            </aside>
 
             <section className="current-translation">
-                {googleTranslation}
+                {loading && <p>Loading...</p>}
+                {error && <div><p style={{color: 'red'}}>{`${error}. Current translation process halted.`}</p></div>}
+                {currentTranslation && (
+                    <>
+                        <div className="translation-result">
+                            {googleTranslation}
+                        </div>
+                        <section className="translation-explanation">
+                            <Explanation explanation={explanation}/>
+                        </section>
+                    </>
+                )}
             </section>
 
             <section className="past-translations">
                 Past translations
             </section>
 
-            {loading && <div><p>Loading...</p></div>}
-            {error && <div><p style={{color: 'red'}}>{`${error}. Current translation process halted.`}</p></div>}
         </main>
     )
 }

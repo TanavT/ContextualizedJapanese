@@ -31,6 +31,24 @@ body,
   grid-area: current;
   background: white;
   padding: 1rem;
+  overflow-y: auto;
+}
+
+.translation-result {
+  padding-bottom: 1rem;
+}
+
+.translation-contextualization {
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+.translation-contextualization h3 {
+  margin-top: 0;
+}
+
+.translation-contextualization > :last-child {
+  margin-bottom: 0;
 }
 
 .past-translations {
@@ -48,8 +66,24 @@ body,
   padding: 1rem;
 }
 
-.text_input {
-  width: 350px;
+.sentence-form label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.text_input,
+.context_input {
+  width: min(350px, 25vw);
+  padding: 0.5rem;
+}
+
+.context_input {
+  width: min(430px, 30vw);
+}
+
+.practice_select {
   padding: 0.5rem;
 }
 
